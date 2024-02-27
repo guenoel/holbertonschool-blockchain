@@ -23,7 +23,7 @@ uint8_t *sha256(int8_t const *s, size_t len,
 	if (!SHA256_Init(&contex))
 		return (NULL);
 
-	if (SHA256_Update(&contex, s, len) != 1)
+	if (!SHA256_Update(&contex, s, len))
 		return (NULL);
 
 	if (!SHA256_Final(digest, &contex))
