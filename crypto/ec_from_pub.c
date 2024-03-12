@@ -17,20 +17,20 @@ EC_KEY *ec_from_pub(uint8_t const pub[EC_PUB_LEN])
 	if (!pub)
 		return (NULL);
 
-	/* Create a new empty EC_KEY structure */
+	/* Create a new EC_KEY object using a given curve */
 	key = EC_KEY_new_by_curve_name(EC_CURVE);
 	if (!key)
 		return (NULL);
 	/* Get the group of the EC_KEY structure */
 	group = EC_KEY_get0_group(key);
-	/* Create a new empty EC_POINT structure */
+	/* Create a new EC_POINT from  */
 	point = EC_POINT_new(group);
 	if (!point)
 	{
 		EC_KEY_free(key);
 		return (NULL);
 	}
-	/* Convert the public key octet string to an EC_POINT */
+	/* decode octet string pub key to EC_point X, Y */
 	if (!EC_POINT_oct2point(group, point, pub, EC_PUB_LEN, NULL))
 	{
 		EC_KEY_free(key);
