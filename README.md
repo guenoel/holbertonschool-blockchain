@@ -178,5 +178,5 @@
 <a href="https://twitter.com/GuenoelAndrieux" target="blank"><img align="center" src="./media/twitter.svg" alt="guenoel" height="30" width="40" /></a>
 <a href="https://www.linkedin.com/in/guenoelandrieux/" target="blank"><img align="center" src="./media/linked-in-alt.svg" alt="guenoel" height="30" width="40" /></a>
 <a href="https://medium.com/@5020" target="blank"><img align="center" src="./media/medium.svg" alt="guenoel" height="30" width="40" /></a>
-<a href="https://discord.gg/guenoel" target="blank"><img align="center" src="./media/discord.svg" alt="guenoel" height="30" width="40" /></a>
+<a href="https://discord.gg/vEP46BBZ" target="blank"><img align="center" src="./media/discord.svg" alt="Holberton Toulouse" height="30" width="40" /></a>
 </p>
