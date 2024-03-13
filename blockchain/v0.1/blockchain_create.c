@@ -31,7 +31,9 @@ blockchain_t *blockchain_create(void)
 	genesis->info.timestamp = 1537578000;
 	genesis->info.nonce = 0;
 	memset(genesis->info.prev_hash, 0, SHA256_DIGEST_LENGTH);
-	memset(genesis->data.buffer, 0, BLOCKCHAIN_DATA_MAX);
+	memcpy(genesis->data.buffer, "Holberton School", 16);
+	genesis->data.len = 16;
+	memcpy(genesis->hash, GENESIS_HASH, SHA256_DIGEST_LENGTH);
 
 	if (llist_add_node(list, genesis, ADD_NODE_FRONT) == -1)
 	{
