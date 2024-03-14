@@ -1,5 +1,12 @@
 #include "blockchain.h"
 
+/**
+ * block_create - creates a new block in the blockchain
+ * @prev: pointer to previous block
+ * @data: pointer to the data to be added to the block
+ * @data_len: length of data
+ * Return: pointer to the new block, or NULL on failure
+ */
 block_t *block_create(block_t const *prev, int8_t const *data,
 						uint32_t data_len)
 {
