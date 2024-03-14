@@ -13,7 +13,6 @@ uint8_t *block_hash(block_t const *block,
 
 	if (!block)
 		return (NULL);
-
 	len = sizeof(block->info) + block->data.len;
 	return (sha256((int8_t const *)block, len, hash_buf));
 }
