@@ -75,7 +75,7 @@ holbertonschool-blockchain
 ```
 
 ### Tasks
-### [0. Create Blockchain]()
+### [0. Create Blockchain](./blockchain_create.c)
 
 Write a function that creates a `Blockchain` structure, and initializes it.
 
@@ -166,7 +166,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [1. Create Block]()
+### [1. Create Block](./block_create.c)
 
 Write a function that creates a Block structure and initializes it.
 
@@ -272,7 +272,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [2. Delete Block]()
+### [2. Delete Block](./block_destroy.c)
 
 Write a function that deletes an existing Block
 
@@ -338,7 +338,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [3. Delete Blockchain]()
+### [3. Delete Blockchain](./blockchain_destroy.c)
 
 Write a function that deletes an existing Blockchain, along with all the Blocks it contains
 
@@ -406,7 +406,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 * GitHub repository:  `holbertonschool-blockchain`
 * File: `blockchain/v0.1/blockchain_destroy.c`
 
-### [4. Hash Block]()
+### [4. Hash Block](./block_hash.c)
 
 Write a function that computes the hash of a Block
 
@@ -545,7 +545,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [5. Save Blockchain]()
+### [5. Save Blockchain](./blockchain_serialize.c)
 
 Write a function that serializes a Blockchain into a file
 
@@ -562,45 +562,42 @@ The resulting file should contain exactly the following:
 
 The following table describes the file header
 
-**Offset**	**Size (bytes)**	**Field**	**Purpose**
+| **Offset** | **Size (bytes)** | **Field**        | **Purpose**                                                                                   |
+|--------|--------------|--------------|-------------------------------------------------------------------------------------------|
+| 0x00   | 4            | hblk_magic   | Identifies the file as a valid serialized Blockchain format                                |
+|        |              |              | HBLK (48 42 4c 4b) in ASCII; these four bytes constitute the magic number                  |
+| 0x04   | 3            | hblk_version | Identifies the version at which the Blockchain has been serialized                        |
+|        |              |              | The format is X.Y, where both X and Y are ASCII characters between 0 and 9                 |
+| 0x07   | 1            | hblk_endian  | This byte is set to either 1 or 2 to signify little or big endianness, respectively        |
+|        |              |              | This affects interpretation of multi-byte fields                                           |
+| 0x08   | 4            | hblk_blocks  | Number of blocks in the Blockchain                                                        |
+|        |              |              | Endianness dependent                                                                      |
+| 0x0C   | ?            | blocks       | List of Blocks                                                                            |
+|        |              |              |                                                                                       |
 
-0x00	4	hblk_magic	Identifies the file as a valid serialized Blockchain format
-HBLK (48 42 4c 4b) in ASCII; these four bytes constitute the magic number
-
-0x04	3	hblk_version	Identifies the version at which the Blockchain has been serialized
-The format is X.Y, where both X and Y are ASCII characters between 0 and 9
-
-0x07	1	hblk_endian	This byte is set to either 1 or 2 to signify little or big endianness, respectively
-This affects interpretation of multi-byte fields
-
-0x08	4	hblk_blocks	Number of blocks in the Blockchain
-Endianness dependent
-
-0x0C	?	blocks	List of Blocks
-Block
+**Block**
 
 The following table describes how a block is serialized. The Blocks are serialized contiguously, the first one starting at offset 0x0C
 
-**Offset**	**Size (bytes)**	**Field**	**Purpose**
 
-0x00	4	index	Block index in the Blockchain
-Endianness dependent
+| **Offset** | **Size (bytes)** | **Field**       | **Purpose**                                         |
+|--------|--------------|-------------|-------------------------------------------------|
+| 0x00   | 4            | index       | Block index in the Blockchain                  |
+|        |              |             | Endianness dependent                           |
+| 0x04   | 4            | difficulty  | Block difficulty                               |
+|        |              |             | Endianness dependent                           |
+| 0x08   | 8            | timestamp   | Time at which the block was created (UNIX timestamp) |
+|        |              |             | Endianness dependent                           |
+| 0x10   | 8            | nonce       | Salt value used to alter the Block hash        |
+|        |              |             | Endianness dependent                           |
+| 0x18   | 32           | prev_hash   | Hash of the previous Block in the Blockchain   |
+| 0x38   | 4            | data_len    | Block data size (in bytes)                     |
+|        |              |             | Endianness dependent                           |
+| 0x3C   | data_len     | data        | Block data                                     |
+| 0x3C + data_len| 32  | hash        | Block hash                                     |
 
-0x04	4	difficulty	Block difficulty
-Endianness dependent
 
-0x08	8	timestamp	Time at which the block was created (UNIX timestamp)
-Endianness dependent
 
-0x10	8	nonce	Salt value used to alter the Block hash
-Endianness dependent
-
-0x18	32	prev_hash	Hash of the previous Block in the Blockchain
-0x38	4	data_len	Block data size (in bytes)
-Endianness dependent
-
-0x3C	data_len	data	Block data
-0x3C + data_len	32	hash	Block hash
 
 ```
 alex@~/holbertonschool-blockchain/blockchain/v0.1$ cat test/blockchain_serialize-main.c
@@ -698,7 +695,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [6. Load Blockchain]()
+### [6. Load Blockchain](./blockchain_deserialize.c)
 
 Write a function that deserializes a Blockchain from a file
 
@@ -825,7 +822,7 @@ alex@~/holbertonschool-blockchain/blockchain/v0.1$
 
 ---
 
-### [7. Block validity]()
+### [7. Block validity](./block_is_valid.c)
 
 Write a function that verifies that a Block is valid
 
