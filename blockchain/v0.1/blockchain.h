@@ -119,6 +119,8 @@ uint8_t _get_endianness(void);
 	(((x) & 0x0000ff00) << 8) | \
 	(((x) & 0x000000ff) << 24) \
 )
+llist_t *blocks(int fd, uint32_t size, uint8_t endianness);
+
 blockchain_t *blockchain_deserialize(char const *path);
 
 /* __attribute__((warn_unused_result)); */

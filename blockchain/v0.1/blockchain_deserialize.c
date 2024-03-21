@@ -1,23 +1,31 @@
 #include "blockchain.h"
 
-
-void *free_blockchain(blockchain_t *chain, int fd, int idx)
+/**
+* cleanup_block_data - cleans resources associated with blockchain blocks
+* @block: puntero al bloque a liberar
+* @list: puntero a la lista a destruir
+* Return: void
+*/
+void cleanup_block_data(block_t *block, llist_t *list)
 {
-	llist_t *list = chain->chain;
-	block_t *block = llist_get_node_at(chain->chain, idx);
-	int i;
-
-	for (i = idx; i >= 0; i--)
+	if (block != NULL)
 	{
-		if (block != NULL)
-		{
-			free(block);
-		}
+		free(block);
 	}
 	if (list != NULL)
 	{
 		llist_destroy(list, 1, NULL);
 	}
+}
+
+/**
+* cleanup_blockchain_data - clear string memory and close file
+* @chain: pointer to chain
+* @fd: file descriptor
+* Return: void
+*/
+blockchain_t *cleanup_blockchain_data(blockchain_t *chain, int fd)
+{
 	if (chain != NULL)
 	{
 		free(chain);
@@ -29,43 +37,68 @@ void *free_blockchain(blockchain_t *chain, int fd, int idx)
 	return (NULL);
 }
 
-
-
+/**
+* blockchain_deserialize - deserializes blockchain from file
+* @path: path to serialized blockchain file
+* Return: pointer to deserialized blockchain or null
+*/
 blockchain_t *blockchain_deserialize(char const *path)
 {
-	int fd = -1, byte_read = 0, i, nb_blocks;
-	char buf[4096] = {0};
-	llist_t *list = llist_create(MT_SUPPORT_TRUE); /* multithreading */
+	int fd = -1;
 	blockchain_t *chain = NULL;
 	uint8_t endianness;
-	block_t *block;
+	char buf[4096] = {0};
+	uint32_t nb_blocks;
 
 	if (!path)
-		return (free_blockchain(chain, fd, -1));
-	if (!list)
-		return (free_blockchain(chain, fd, -1));
+		return (NULL);
 	fd = open(path, O_RDONLY);
 	if (fd == -1)
-		return (free_blockchain(chain, fd, -1));
-
-	byte_read = read(fd, buf, 4);
-	if (byte_read != 4 || strncmp(buf, HBLK_MAGIC, 4))
-		return (free_blockchain(chain, fd, -1));
-	byte_read = read(fd, buf, 3);
-	if (byte_read != 3 || strncmp(buf, HBLK_VERSION, 3))
-		return (free_blockchain(chain, fd, -1));
+		return (NULL);
+	if (read(fd, buf, strlen(HBLK_MAGIC)) != strlen(HBLK_MAGIC) ||
+		strcmp(buf, HBLK_MAGIC))
+		return (cleanup_blockchain_data(chain, fd));
+	buf[strlen(HBLK_VERSION)] = 0;
+	if (read(fd, buf, strlen(HBLK_VERSION)) != strlen(HBLK_VERSION) ||
+		strcmp(buf, HBLK_VERSION))
+		return (cleanup_blockchain_data(chain, fd));
+	chain = calloc(1, sizeof(*chain));
+	if (!chain)
+		return (cleanup_blockchain_data(chain, fd));
 	if (read(fd, &endianness, 1) != 1)
-		return (free_blockchain(chain, fd, -1));
+		return (cleanup_blockchain_data(chain, fd));
+	endianness = endianness != _get_endianness();
 	if (read(fd, &nb_blocks, 4) != 4)
-		return (free_blockchain(chain, fd, -1));
+		return (cleanup_blockchain_data(chain, fd));
+	chain->chain = blocks(fd, nb_blocks, endianness);
+	if (!chain)
+		return (cleanup_blockchain_data(chain, fd));
 
+	return (chain);
+}
+
+/**
+* blocks - deserializes all the blocks in the file
+* @fd: open fd to save file
+* @nb_blocks: number of blocks in the file
+* @endianness: if endianess needs switching
+* Return: pointer to list of blocks or NULL
+*/
+llist_t *blocks(int fd, uint32_t nb_blocks, uint8_t endianness)
+{
+	block_t *block;
+	llist_t *list = llist_create(MT_SUPPORT_TRUE);
+	uint32_t i = 0;
+
+	if (!list)
+		return (NULL);
 	for (i = 0; i < nb_blocks; i++)
 	{
 		block = calloc(1, sizeof(*block));
 		if (!block)
-			return (free_blockchain(chain, fd, i));
-		if (read(fd, &block->info, sizeof(block->info)) != sizeof(block->info))
-			return (free_blockchain(chain, fd, i));
+			return (cleanup_block_data(block, list), NULL);
+		if (read(fd, &(block->info), sizeof(block->info)) != sizeof(block->info))
+			return (cleanup_block_data(block, list), NULL);
 		if (endianness)
 		{
 			block->info.index = SWAPENDIAN32(block->info.index);
@@ -73,17 +106,16 @@ blockchain_t *blockchain_deserialize(char const *path)
 			block->info.timestamp = SWAPENDIAN32(block->info.timestamp);
 			block->info.nonce = SWAPENDIAN32(block->info.nonce);
 		}
-		if (read(fd, &block->data.len, 4) != 4)
-			return (free_blockchain(chain, fd, i));
+		if (read(fd, &(block->data.len), 4) != 4)
+			return (cleanup_block_data(block, list), NULL);
 		if (endianness)
 			block->data.len = SWAPENDIAN32(block->data.len);
 		if (read(fd, block->data.buffer, block->data.len) != block->data.len)
-			return (free_blockchain(chain, fd, i));
-		if (read(fd, &block->hash, SHA256_DIGEST_LENGTH) != SHA256_DIGEST_LENGTH)
-			return (free_blockchain(chain, fd, i));
+			return (cleanup_block_data(block, list), NULL);
+		if (read(fd, block->hash, SHA256_DIGEST_LENGTH) != SHA256_DIGEST_LENGTH)
+			return (cleanup_block_data(block, list), NULL);
 		if (llist_add_node(list, block, ADD_NODE_REAR))
-			return (free_blockchain(chain, fd, i));
+			return (cleanup_block_data(block, list), NULL);
 	}
-	chain->chain = list;
-	return (chain);
+	return (list);
 }
