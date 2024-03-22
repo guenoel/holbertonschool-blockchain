@@ -48,6 +48,9 @@ int block_is_valid(block_t const *block, block_t const *prev_block)
 	/* Check if the data length is greater than the maximum allowed length*/
 	if (block->data.len > BLOCKCHAIN_DATA_MAX)
 		return (1);
+	/* Check if the hash matches the difficulty */
+	if (!hash_matches_difficulty(block->hash, block->info.difficulty))
+		return (1);
 
 	return (0);
 }

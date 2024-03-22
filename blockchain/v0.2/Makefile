@@ -8,7 +8,7 @@ CFLAGS = -Wall -Werror -Wextra -pedantic -Wno-deprecated-declarations -ggdb3 -st
 LIBS = -I. -L../../crypto -lhblk_crypto -lllist -lssl -lcrypto -pthread
 
 # Object files (generated from source files)
-FILES_PROVIDED = provided/_blockchain_print.c provided/_blockchain_destroy.c provided/_endianness.c
+FILES_PROVIDED = provided/_blockchain_print.c provided/_blockchain_destroy.c provided/_endianness.c hash_matches_difficulty.c
 
 # Default Target: Build the executable
 TASK0 = blockchain_create
@@ -19,6 +19,10 @@ TASK4 = block_hash
 TASK5 = blockchain_serialize
 TASK6 = blockchain_deserialize
 TASK7 = block_is_valid
+TASK00 = hash_matches_difficulty
+TASK01 = block_mine
+TASK02 = blockchain_difficulty
+
 
 # Rule to build the executable
 blockchain_create-test: $(TASK0).c test/blockchain_create-main.c $(FILES_PROVIDED)
@@ -45,13 +49,32 @@ blockchain_deserialize-test: $(TASK6).c $(TASK5).c $(TASK4).c $(TASK3).c $(TASK2
 block_is_valid-test: $(TASK7).c $(TASK6).c $(TASK5).c $(TASK4).c $(TASK3).c $(TASK2).c $(TASK1).c $(TASK0).c test/block_is_valid-main.c $(FILES_PROVIDED)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+hash_matches_difficulty-test: $(TASK00).c test/hash_matches_difficulty-main.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+block_mine-test: $(TASK01).c $(TASK7).c $(TASK6).c $(TASK5).c $(TASK4).c $(TASK3).c $(TASK2).c $(TASK1).c $(TASK0).c test/block_mine-main.c $(FILES_PROVIDED)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+blockchain_difficulty-test: $(TASK02).c $(TASK7).c $(TASK6).c $(TASK5).c $(TASK4).c $(TASK3).c $(TASK2).c $(TASK1).c $(TASK0).c test/blockchain_difficulty-main.c $(FILES_PROVIDED)
+
 # Clean up object files and the executable
 clean:
-	rm $(OBJ) blockchain_create-test block_create-test block_destroy-test blockchain_destroy-test block_hash-test blockchain_serialize-test blockchain_deserialize-test block_is_valid-test
+	rm $(OBJ) \
+	blockchain_create-test \
+	block_create-test \
+	block_destroy-test \
+	blockchain_destroy-test \
+	block_hash-test \
+	blockchain_serialize-test \
+	blockchain_deserialize-test \
+	block_is_valid-test \
+	hash_matches_difficulty-test \
+	block_mine-test \
+	blockchain_difficulty-test
 
 # Check for betty style
 check:
-	betty $(TASK0).c $(TASK1).c $(TASK2).c $(TASK3).c $(TASK4).c $(TASK5).c $(TASK6).c $(TASK7).c
+	betty $(TASK0).c $(TASK1).c $(TASK2).c $(TASK3).c $(TASK4).c $(TASK5).c $(TASK6).c $(TASK7).c $(TASK00).c $(TASK01).c $(TASK02).c
 
 # Declaration of phony targets
 .PHONY: clean, check
