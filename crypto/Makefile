@@ -1,24 +1,39 @@
-CC := gcc
-CFLAGS := -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations -lssl -lcrypto
+# Compiler
+CC = gcc
 
-SRCS := sha256.c ec_create.c ec_to_pub.c ec_from_pub.c ec_save.c ec_load.c ec_sign.c ec_verify.c
-OBJS := $(SRCS:.c=.o)
-LIB := libhblk_crypto.a
+# Compiler flags
+CFLAGS = -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations
 
-all: $(LIB)
+# Source files
+SRC_FILES = sha256.c ec_create.c ec_to_pub.c ec_from_pub.c ec_save.c ec_load.c ec_sign.c ec_verify.c
 
-$(LIB): $(OBJS)
-	ar rcs $@ $(OBJS)
+# Object files (generated from source files)
+OBJ_FILES = $(SRC_FILES:.c=.o)
 
+# Name of the static library
+LIB_NAME = libhblk_crypto.a
+
+# Default target
+all: $(LIB_NAME)
+
+# Rule to create the static library
+$(LIB_NAME): $(OBJ_FILES)
+	ar rcs $@ $^
+
+# Rule to compile individual source files into object files
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean up object files
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJ_FILES)
 
+# Clean up object files and the static library
 fclean: clean
-	rm -f $(LIB)
+	rm -f $(LIB_NAME)
 
-aclean: fclean all
+# Recompile everything
+re: fclean all
 
-.PHONY: all clean fclean aclean
+# Define phony targets to prevent conflicts with file names
+.PHONY: all clean fclean re

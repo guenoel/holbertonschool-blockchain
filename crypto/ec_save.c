@@ -1,74 +1,53 @@
 #include "hblk_crypto.h"
 
 /**
- * save_ec_key - saves an EC key pair on the disk
- *
- * @key: pointer to the EC key pair to be saved
- * @folder: path to the folder in which to save the keys
- * @filename: name of the file in which to save the key
- *
- * Return: If key, folder, or filename is NULL, return 0.
- * Otherwise, return 1.
- */
-int save_ec_key(EC_KEY *key, const char *folder, char *filename)
+* ec_save - Saves an EC key pair on disk
+*
+* @key: Pointer to the EC key pair to be saved
+* @folder: Path to the folder in which to save the keys
+*
+* Return: 1 on success, 0 on failure
+*/
+int ec_save(EC_KEY *key, char const *folder)
 {
-	char path[1024];
-	FILE *fp = NULL;
+	char path_priv[BUFSIZ];
+	char path_pub[BUFSIZ];
+	FILE *priv_file, *pub_file;
 
-	sprintf(path, "%s/%s", folder, filename);
+	/* Check if key or folder is NULL */
+	if (!key || !folder)
+		return (0);
+	/* Create the paths for private and public key files */
+	sprintf(path_priv, "%s/key.pem", folder);
+	sprintf(path_pub, "%s/key_pub.pem", folder);
 
-	/* Save private key */
-	fp = fopen(path, "w");
-	if (!fp)
+	/* Ensure the folder exists */
+	if (access(folder, F_OK) == -1 && mkdir(folder, S_IRWXU | S_IRGRP | S_IXGRP
+												| S_IROTH | S_IXOTH) == -1)
 	{
-		perror("Error opening key file for writing");
+		perror("mkdir");
 		return (0);
 	}
-
-	if (strcmp(filename, PRI_FILENAME) == 0)
-		if (!PEM_write_ECPrivateKey(fp, key, NULL, NULL, 0, NULL, NULL))
-		{
-			perror("Error writing private key to file");
-			fclose(fp);
-			return (0);
-		}
-	if (strcmp(filename, PUB_FILENAME) == 0)
-		if (!PEM_write_EC_PUBKEY(fp, key))
-		{
-			perror("Error writing public key to file");
-			fclose(fp);
-			return (0);
-		}
-
-	fclose(fp);
-
-	return (1);
-}
-
-/**
- * ec_save - saves an existing EC key pair on the disk
- *
- * @key: pointer to the EC key pair to be saved
- * @folder: path to the folder in which to save the keys
- *
- * Return: If key or folder is NULL, return 0.
- * Otherwise, return 1.
- */
-int ec_save(EC_KEY *key, const char *folder)
-{
-	/* Create the folder if it doesn't exist */
-	if (mkdir(folder, 0700) != 0 && errno != EEXIST)
+	/* Save private key to file */
+	priv_file = fopen(path_priv, "w");
+	/* Check if file was created */
+	if (!priv_file || PEM_write_ECPrivateKey(priv_file, key, NULL, NULL, 0,
+											NULL, NULL) == 0)
 	{
-		perror("Error creating folder");
+		perror(!priv_file ? "fopen" : "Failed to write private key to file");
+		fclose(priv_file);
 		return (0);
 	}
+	fclose(priv_file);
+	/* Save public key to file */
+	pub_file = fopen(path_pub, "w");
 
-	/* Save private key in a file */
-	if (!save_ec_key(key, folder, PRI_FILENAME))
+	if (!pub_file || PEM_write_EC_PUBKEY(pub_file, key) == 0)
+	{
+		perror(!pub_file ? "fopen" : "Failed to write public key to file");
+		fclose(pub_file);
 		return (0);
-	/* Save public key in a file */
-	if (!save_ec_key(key, folder, PUB_FILENAME))
-		return (0);
-
+	}
+	fclose(pub_file);
 	return (1);
 }

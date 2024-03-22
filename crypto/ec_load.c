@@ -1,43 +1,50 @@
 #include "hblk_crypto.h"
 
 /**
- * ec_load - loads an EC key pair from the disk
- *
- * @folder: path to the folder in which to save the keys
- *
- * Return: If folder is NULL, return NULL.
- * Otherwise, return a pointer to the created EC_KEY structure.
- */
+* ec_load - load an EC key pair from the disk
+* @folder: path to folder from which to load the keys
+*
+* Return: pointer to created EC key pair, NULL on error
+*/
 EC_KEY *ec_load(char const *folder)
 {
-	char path[1024];
-	FILE *fp;
-	EC_KEY *key;
+	EC_KEY *key = NULL;
+	char buf[BUFSIZ];
+	FILE *filePointer;
 
-	if (!folder)
+	/*Check if folder is NULL*/
+	if (!folder || strlen(folder) + strlen(PUB_FILENAME) > BUFSIZ)
 		return (NULL);
-
-	sprintf(path, "%s/%s", folder, PUB_FILENAME);
-	fp = fopen(path, "r");
-	if (!fp)
+	/*Create a new EC_KEY structure*/
+	sprintf(buf, "%s/%s", folder, PUB_FILENAME);
+	filePointer = fopen(buf, "r");
+	/*Check if filePointer is NULL*/
+	if (!filePointer)
 		return (NULL);
-	if (!PEM_read_EC_PUBKEY(fp, &key, NULL, NULL))
+	/*Read the public key from the file*/
+	if (!PEM_read_EC_PUBKEY(filePointer, &key, NULL, NULL))
 	{
-		EC_KEY_free(key);
-		fclose(fp);
+		fclose(filePointer);
 		return (NULL);
 	}
-	sprintf(path, "%s/%s", folder, PRI_FILENAME);
-	fp = fopen(path, "r");
-	if (!fp)
-		return (NULL);
-	if (!PEM_read_ECPrivateKey(fp, &key, NULL, NULL))
+
+	fclose(filePointer);
+	/*Create a new EC_KEY structure*/
+	sprintf(buf, "%s/%s", folder, PRI_FILENAME);
+	filePointer = fopen(buf, "r");
+	if (!filePointer)
 	{
 		EC_KEY_free(key);
-		fclose(fp);
 		return (NULL);
 	}
-	fclose(fp);
+	/*Read the private key from the file*/
+	if (!PEM_read_ECPrivateKey(filePointer, &key, NULL, NULL))
+	{
+		fclose(filePointer);
+		EC_KEY_free(key);
+		return (NULL);
+	}
 
+	fclose(filePointer);
 	return (key);
 }

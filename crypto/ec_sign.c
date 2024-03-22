@@ -1,26 +1,34 @@
 #include "hblk_crypto.h"
 
 /**
- * ec_sign - signs a given set of bytes, using a given EC_KEY private key
- *
- * @key: pointer to the EC_KEY structure containing the private key to be used
- * @msg: characters to be signed
- * @msglen: number of characters to be signed
- * @sig: address at which to store the signature
- *
- * Return: If key, msg, or sig is NULL, or upon failure, return NULL.
- * Otherwise, return a pointer to the signature.
- */
-uint8_t *ec_sign(EC_KEY const *key, uint8_t const *msg, size_t msglen,
-					sig_t *sig)
+* ec_sign - Sign a set of bytes using a given private EC_KEY
+*
+* @key: Pointer to the EC_KEY struct containing the private key for signing
+* @msg: Pointer to characters to be signed
+* @msglen: Length of msg
+* @sig: Address to store the signature
+*
+* Return: Pointer to the signature buffer on success, NULL on error
+*/
+uint8_t *ec_sign(EC_KEY const *key, uint8_t const *msg,
+				size_t msglen, sig_t *sig)
 {
-	uint32_t len = 0;
+	uint32_t signature_len = 0;
 
-	if (!key || !msg || !msglen)
+	/* Check for NULL pointers */
+	if (!key || !msg || !sig)
 		return (NULL);
+
+	/* Initialize the signature buffer to zeros */
 	memset(sig->sig, 0, sizeof(sig->sig));
-	if (ECDSA_sign(0, msg, msglen, sig->sig, &len, (EC_KEY *)key) != 1)
+
+	/* Sign the message using ECDSA */
+	if (ECDSA_sign(0, msg, msglen, sig->sig, &signature_len, (EC_KEY *)key) != 1)
 		return (NULL);
-	sig->len = (uint8_t)len;
+
+	/* Set the length of the signature */
+	sig->len = signature_len;
+
+	/* Return a pointer to the signature buffer */
 	return (sig->sig);
 }
