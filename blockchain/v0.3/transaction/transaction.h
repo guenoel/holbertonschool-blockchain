@@ -1,6 +1,7 @@
 #ifndef _TRANSACTION_H_
 #define _TRANSACTION_H_
 
+#include "../../../crypto/hblk_crypto.h"
 #include "../blockchain.h"
 
 /* TRANSACTION */
