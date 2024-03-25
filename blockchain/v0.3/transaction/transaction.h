@@ -3,23 +3,6 @@
 
 #include "../blockchain.h"
 
-/* BLOCK */
-/**
- * struct block_s - Block structure
- *
- * @info:         Block info
- * @data:         Block data
- * @transactions: List of transactions
- * @hash:         256-bit digest of the Block, to ensure authenticity
- */
-typedef struct block_s
-{
-	block_info_t    info; /* This must stay first */
-	block_data_t    data; /* This must stay second */
-	llist_t     *transactions;
-	uint8_t     hash[SHA256_DIGEST_LENGTH];
-} block_t;
-
 /* TRANSACTION */
 /**
  * struct transaction_s - Transaction structure

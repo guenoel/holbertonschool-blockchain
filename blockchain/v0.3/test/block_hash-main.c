@@ -4,7 +4,8 @@
 
 #include "blockchain.h"
 
-void _blockchain_print_brief(blockchain_t const *blockchain);
+void _blockchain_print(blockchain_t const *blockchain);
+void _blockchain_destroy(blockchain_t *blockchain);
 
 /**
  * main - Entry point
@@ -15,23 +16,19 @@ int main(void)
 {
 	blockchain_t *blockchain;
 	block_t *block;
-	EC_KEY *owner;
 
-	owner = ec_create();
 	blockchain = blockchain_create();
 	block = llist_get_head(blockchain->chain);
 
 	block = block_create(block, (int8_t *)"Holberton", 9);
-	llist_add_node(block->transactions,
-		coinbase_create(owner, block->info.index),
-		ADD_NODE_REAR);
 	llist_add_node(blockchain->chain, block, ADD_NODE_REAR);
-	_blockchain_print_brief(blockchain);
+	_blockchain_print(blockchain);
 
 	block_hash(block, block->hash);
-	_blockchain_print_brief(blockchain);
+	block = block_create(block, (int8_t *)"School", 6);
+	llist_add_node(blockchain->chain, block, ADD_NODE_REAR);
+	_blockchain_print(blockchain);
 
-	blockchain_destroy(blockchain);
-	EC_KEY_free(owner);
+	_blockchain_destroy(blockchain);
 	return (EXIT_SUCCESS);
 }
