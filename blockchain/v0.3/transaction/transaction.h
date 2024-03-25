@@ -94,14 +94,14 @@ int transaction_is_valid(transaction_t const *transaction,
 transaction_t *coinbase_create(EC_KEY const *receiver, uint32_t block_index);
 int coinbase_is_valid(transaction_t const *coinbase, uint32_t block_index);
 void transaction_destroy(transaction_t *transaction);
-block_t *block_create(block_t const *prev, int8_t const *data,
-	uint32_t data_len);
-uint8_t *block_hash(block_t const *block,
-	uint8_t hash_buf[SHA256_DIGEST_LENGTH]);
-int block_is_valid(block_t const *block, block_t const *prev_block,
-	llist_t *all_unspent);
-llist_t *update_unspent(llist_t *transactions,
-	uint8_t block_hash[SHA256_DIGEST_LENGTH], llist_t *all_unspent);
-int blockchain_serialize(blockchain_t const *blockchain, char const *path);
+/* block_t *block_create(block_t const *prev, int8_t const *data, */
+	/* uint32_t data_len); */
+/* uint8_t *block_hash(block_t const *block, */
+/* uint8_t hash_buf[SHA256_DIGEST_LENGTH]); */
+/* int block_is_valid(block_t const *block, block_t const *prev_block, */
+	/* llist_t *all_unspent); */
+/* llist_t *update_unspent(llist_t *transactions, */
+	/* uint8_t block_hash[SHA256_DIGEST_LENGTH], llist_t *all_unspent); */
+/*int blockchain_serialize(blockchain_t const *blockchain, char const *path);*/
 
 #endif /* _TRANSACTION_H_ */
