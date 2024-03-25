@@ -2,7 +2,7 @@
 #define _TRANSACTION_H_
 
 #include "../../../crypto/hblk_crypto.h"
-#include "../blockchain.h"
+#include "llist.h"
 
 /* TRANSACTION */
 /**
