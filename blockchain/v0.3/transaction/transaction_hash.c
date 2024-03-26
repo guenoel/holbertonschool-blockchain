@@ -62,9 +62,6 @@ uint8_t *transaction_hash(transaction_t const *transaction,
 {
 	ssize_t len;
 	uint8_t *temp_buf, *curr_position;
-	llist_t *list;
-	tx_in_t *tx_in;
-	tx_out_t *tx_out;
 
 	if (!transaction || !hash_buf)
 		return (NULL);
@@ -95,5 +92,5 @@ uint8_t *transaction_hash(transaction_t const *transaction,
 	free(temp_buf);
 
 	/* Returns the calculated hash */
-	return (&hash_buf);
+	return (hash_buf);
 }
