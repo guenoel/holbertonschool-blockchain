@@ -30,10 +30,13 @@ sig_t *tx_in_sign(tx_in_t *in, uint8_t const tx_id[SHA256_DIGEST_LENGTH],
 		/* Check if the current unspent output matches the input's reference */
 		if (!memcmp(in->tx_out_hash, unspent_output->out.hash,
 			SHA256_DIGEST_LENGTH))
-			return (NULL);
+			break; /* //TODO: why not return NULL here ? */
 		/* Reset unspent_output to NULL if no match found */
 		unspent_output = NULL;
 	}
+	/* If no matching unspent output was found, return NULL */
+	if (!unspent_output)
+		return (NULL);/* If the unspent output is NULL */
 	/* Get the public key of the sender */
 	if (!ec_to_pub(sender, pub) || memcmp(pub, unspent_output->out.pub,
 		EC_PUB_LEN))
