@@ -34,11 +34,20 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 	return (0);
 }
 
+/**
+ * send_amount - creates a transaction output for the specified amount
+ * @sender: private key of the sender
+ * @receiver: public key of the receiver
+ * @amount: amount to send
+ * @unspent_amount: total amount of unspent transactions
+ * Return: If an error occurs, return NULL.
+ * Otherwise, return a pointer to the created list of transaction outputs.
+ */
 llist_t *send_amount(EC_KEY const *sender, EC_KEY const *receiver,
 					int32_t amount, uint32_t unspent_amount)
 {
 	llist_t *tx_list = NULL; /* List to store transaction outputs */
-	uint32_t remaining_balance = unspent_amount - amount; /* Calculate remaining balance */
+	uint32_t remaining_balance = unspent_amount - amount;
 	uint8_t receiver_pub_key[EC_PUB_LEN]; /* Buffer for receiver's public key */
 	tx_out_t *tx_out = calloc(1, sizeof(*tx_out));
 
@@ -73,10 +82,8 @@ llist_t *send_amount(EC_KEY const *sender, EC_KEY const *receiver,
 			llist_destroy(tx_list, 1, NULL);
 			return (NULL);
 		}
-		/* Add the output to the list */
-		llist_add_node(tx_list, tx_out, ADD_NODE_REAR);
+		llist_add_node(tx_list, tx_out, ADD_NODE_REAR); /* Add output to list */
 	}
-
 	return (tx_list);
 }
 
