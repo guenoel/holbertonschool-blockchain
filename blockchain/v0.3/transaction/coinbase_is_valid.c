@@ -1,6 +1,28 @@
 #include "transaction.h"
 
 /**
+* is_empty - checks if buffer memory is all 0
+* @buf: the buffer to check
+* @size: size of buffer
+* Return: 1 if empty else 0
+*/
+int is_empty(uint8_t *buf, size_t size)
+{
+	/* Check if buffer memory is all 0 */
+	size_t i;
+
+	/* Iterate through buffer */
+	for (i = 0; i < size; i++)
+	{
+		/* If not 0, return 0 */
+		if (buf[i] != 0)
+			return (0);
+	}
+	/* If all 0, return 1 */
+	return (1);
+}
+
+/**
  * coinbase_is_valid - validates a coinbase transaction
  *
  * @coinbase: coinbase transaction to validate
@@ -26,8 +48,11 @@ int coinbase_is_valid(transaction_t const *coinbase, uint32_t block_index)
 	input = llist_get_node_at(coinbase->inputs, 0);
 	if (memcmp(input->tx_out_hash, &block_index, 4))
 		return (0);
-	if (input->block_hash || input->tx_id || input->sig.sig || input->sig.len)
+	if (!is_empty(input->block_hash, sizeof(input->block_hash)) ||
+				!is_empty(input->tx_id, sizeof(input->tx_id)) ||
+				!is_empty((uint8_t *)&input->sig, sizeof(input->sig)))
 		return (0);
+
 	output = llist_get_node_at(coinbase->outputs, 0);
 	if (output->amount != COINBASE_AMOUNT)
 		return (0);
