@@ -16,19 +16,19 @@ int coinbase_is_valid(transaction_t const *coinbase, uint32_t block_index)
 
 	if (!coinbase)
 		return (0);
-	transaction_hash(coinbase, &hash_buff);
+	transaction_hash(coinbase, hash_buff);
 	if (memcmp(coinbase->id, hash_buff, SHA256_DIGEST_LENGTH))
 		return (0);
 	if (llist_size(coinbase->inputs) != 1)
 		return (0);
 	if (llist_size(coinbase->outputs) != 1)
 		return (0);
-	input = coinbase->inputs;
-	if (memcmp(input->tx_out_hash, block_index, 4))
+	input = llist_get_node_at(coinbase->inputs, 0);
+	if (memcmp(input->tx_out_hash, &block_index, 4))
 		return (0);
 	if (input->block_hash || input->tx_id || input->sig.sig || input->sig.len)
 		return (0);
-	output = coinbase->outputs;
+	output = llist_get_node_at(coinbase->outputs, 0);
 	if (output->amount != COINBASE_AMOUNT)
 		return (0);
 
