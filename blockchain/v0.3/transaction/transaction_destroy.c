@@ -1,5 +1,10 @@
 #include "transaction.h"
 
+/**
+ * transaction_destroy - frees a transaction structure
+ *
+ * @transaction: transaction structure to free
+ */
 void transaction_destroy(transaction_t *transaction)
 {
 	if (!transaction)
