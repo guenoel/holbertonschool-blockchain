@@ -14,12 +14,17 @@ block_t *block_create(block_t const *prev, int8_t const *data,
 	block_t *block;
 	uint32_t max_len = data_len > BLOCKCHAIN_DATA_MAX ?
 		BLOCKCHAIN_DATA_MAX : data_len;
+	llist_t *list_tx = llist_create(MT_SUPPORT_FALSE);
 
 	if (!prev || !data)
 		return (NULL);
 	block = calloc(1, sizeof(*block));
-	if (!block)
+	if (!block || !list_tx)
+	{
+		free(block);
+		llist_destroy(list_tx, 0, NULL);
 		return (NULL);
+	}
 
 	memcpy(block->data.buffer, data, max_len);
 	block->data.len = max_len;
@@ -27,13 +32,7 @@ block_t *block_create(block_t const *prev, int8_t const *data,
 	memcpy(block->info.prev_hash, prev->hash, SHA256_DIGEST_LENGTH);
 	block->info.index = prev->info.index + 1;
 	block->info.timestamp = (uint64_t)time(NULL);
-
-	block->transactions = llist_create(MT_SUPPORT_FALSE);
-	if (!block->transactions)
-	{
-		free(block);
-		return (NULL);
-	}
+	block->transactions = list_tx;
 
 	return (block);
 }
