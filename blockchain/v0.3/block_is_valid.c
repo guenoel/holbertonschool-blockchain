@@ -1,6 +1,36 @@
 #include "blockchain.h"
 
 /**
+* validate_transactions - Check if all transactions are valid
+* @block: Pointer to the Block to check
+* @unspent: List of unspent transactions
+* Return: 0 if all transactions are valid, otherwise -1
+*/
+
+int validate_transactions(block_t const *block, llist_t *unspent)
+{
+	int i;
+	transaction_t *node;
+
+	/* Loop through all transactions in the block */
+	for (i = 0; i < llist_size(block->transactions); i++)
+	{
+		/* Get the transaction */
+		node = llist_get_node_at(block->transactions, i);
+		/* Check if the coinbase transaction is valid */
+		if (i == 0 && !coinbase_is_valid(node, block->info.index))
+			return (-1);
+		/* Check if the transaction is valid */
+		if (i > 0 && !transaction_is_valid(node, unspent))
+			return (-1);
+	}
+	/* Return 0 if all transactions are valid -1 if there are no transactions */
+	if (i == 0)
+		return (-1);
+	return (0);
+}
+
+/**
 * cleanup_hash - Clears a hash by setting all its bytes to 0
 * @hash: Pointer to the hash to clear
 * @hash_len: Length of the hash in bytes
@@ -14,10 +44,12 @@ void cleanup_hash(uint8_t *hash, size_t hash_len)
 * block_is_valid - Verifies if a block is valid
 * @block: Pointer to the block to check
 * @prev_block: Pointer to the previous block in the blockchain
+* @all_unspent: List of all unspent transactions
 *
 * Return: 1 if the block is valid, otherwise 0
 */
-int block_is_valid(block_t const *block, block_t const *prev_block)
+int block_is_valid(block_t const *block, block_t const *prev_block,
+														llist_t *all_unspent)
 {
 	uint8_t hash_verify[SHA256_DIGEST_LENGTH] = {0};
 	block_t const genesis = GENESIS_BLOCK;
@@ -50,6 +82,9 @@ int block_is_valid(block_t const *block, block_t const *prev_block)
 		return (1);
 	/* Check if the hash matches the difficulty */
 	if (!hash_matches_difficulty(block->hash, block->info.difficulty))
+		return (1);
+	/* Check if all transactions are valid */
+	if (validate_transactions(block, all_unspent) == -1)
 		return (1);
 
 	return (0);

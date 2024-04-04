@@ -1,38 +1,27 @@
-# Compiler
+# Compile the blockchain library
 CC = gcc
-
 # Compiler flags
-CFLAGS = -Wall -Wextra -Werror -pedantic -g3
+CFLAGS = -Wall -Werror -Wextra -pedantic -std=gnu90 -ggdb3 -c -I. -Itransaction/ -Iprovided/ -I../../crypto -L../../crypto -lhblk_crypto -lllist -lssl -lcrypto -pthread
 
-# Linker flags
-LDFLAGS = -L../../crypto -lhblk_crypto -lllist -lssl -lcrypto -pthread
+# Source files and object files
+SRC := $(wildcard *.c) $(wildcard transaction/*.c) # Get all source files
+OBJ := $(patsubst %.c, %.o, $(filter-out provided/%.c, $(SRC))) # Get all object files
+NAME := libhblk_blockchain.a # Name of the library
 
-# Include flags
-INCLUDES = -I. -Itransaction/ -Iprovided/ -I../../crypto
+# Phony targets
+.PHONY: clean oclean flcean libhblk_blockchain.a 
 
-# Source files
-FILES_PROVIDED = transaction/tx_out_create.c provided/_print_hex_buffer.c transaction/test/tx_out_create-main.c
-
-# Object files
-OBJECTS = $(FILES_PROVIDED:.c=.o)
-
-# Target executable
-TASK0 = transaction/tx_out_create-test
-
-all: $(TASK0)
-
-# Compile source files and link to create the executable
-$(TASK0): $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LDFLAGS)
-
-# Compile each source file into an object file
-%.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
-
+# Compile the object files
 clean:
-	rm -f $(TASK0) $(OBJECTS)
+	$(RM) $(OBJ) # Remove object files
 
-check:
-	betty transaction/tx_out_create.c
+# Remove the library
+oclean:
+	$(RM) $(NAME) # Remove the library
 
-.PHONY: all clean check
+# Remove object files and the library
+fclean: clean oclean # Remove object files and the library
+
+# Target to build the library
+libhblk_blockchain.a: blockchain.h transaction/transaction.h $(OBJ)
+	ar rcs $(NAME) $(OBJ)
