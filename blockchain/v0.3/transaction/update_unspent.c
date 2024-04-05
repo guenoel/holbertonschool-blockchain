@@ -42,12 +42,12 @@ llist_t *update_unspent(llist_t *transactions,
 			tr_index++)
 	{
 		transaction = llist_get_node_at(transactions, tr_index);
-		/* Loop through all inputs and outputs */
+		/* Loop through all inputs */
 		for (io_index = 0, io_count = llist_size(transaction->inputs);
 			io_index < io_count; io_index++)
 		{
 			in = llist_get_node_at(transaction->inputs, io_index);
-			/* Remove the unspent transaction output */
+			/* Remove the unspent transaction present in output list */
 			llist_remove_node(all_unspent, find_unspent, in->tx_out_hash, 1, NULL);
 		}
 		/* Loop through all outputs */
@@ -56,7 +56,7 @@ llist_t *update_unspent(llist_t *transactions,
 		{/* Create a new unspent transaction output */
 			out = llist_get_node_at(transaction->outputs, io_index);
 			unspent = unspent_tx_out_create(block_hash, transaction->id, out);
-			/* Add the unspent transaction output */
+			/* Add missing unspent transaction output */
 			llist_add_node(all_unspent, unspent, ADD_NODE_REAR);
 		}
 	}
