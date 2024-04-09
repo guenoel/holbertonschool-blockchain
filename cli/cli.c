@@ -10,8 +10,6 @@
 */
 int find_command(char *cmd, char *arg1, char *arg2, EC_KEY **ec_key)
 {
-	FILE *file = NULL;
-
 	if (strcmp(cmd, "exit") == 0)
 	{
 		return (1);
@@ -50,13 +48,10 @@ int find_command(char *cmd, char *arg1, char *arg2, EC_KEY **ec_key)
 				printf("Load wallet (EC key pair)\n");
 			else
 				printf("Failed to load EC key\n");
-			fclose(file);
 		}
 	}
 	else
-	{
 		printf("unknown command: \"%s\"\n", cmd);
-	}
 	return (0);
 	(void)arg2;
 }
