@@ -1,7 +1,7 @@
 # Compile the blockchain library
 CC = gcc
 # Compiler flags
-CFLAGS = -Wall -Werror -Wextra -pedantic -std=gnu90 -ggdb3 -c -I. -Itransaction/ -Iprovided/ -I../../crypto -L../../crypto -lhblk_crypto -lllist -lssl -lcrypto -pthread
+CFLAGS = -Wall -Werror -Wno-deprecated-declarations -Wextra -pedantic -std=gnu90 -ggdb3 -c -I. -Itransaction/ -Iprovided/ -I../../crypto -L../../crypto -lhblk_crypto -lllist -lssl -lcrypto -pthread
 
 # Source files and object files
 SRC := $(wildcard *.c) $(wildcard transaction/*.c) # Get all source files
@@ -12,11 +12,11 @@ NAME := libhblk_blockchain.a # Name of the library
 .PHONY: clean oclean flcean libhblk_blockchain.a 
 
 # Compile the object files
-clean:
+oclean:
 	$(RM) $(OBJ) # Remove object files
 
 # Remove the library
-oclean:
+clean:
 	$(RM) $(NAME) # Remove the library
 
 # Remove object files and the library
