@@ -65,11 +65,7 @@ int handle_wallet_save(state_t *state, char *path)
  */
 int handle_wallet_load(state_t *state, char *path)
 {
-	/* if (state->wallet != NULL) */
-		/* EC_KEY_free(state->wallet); */
-	printf("1: %p\n", (void *)state->wallet);
 	state->wallet = ec_load(path);
-	printf("2: %p\n", (void *)state->wallet);
 	if (state->wallet)
 	{
 		printf("Load wallet (EC key pair)\n");
