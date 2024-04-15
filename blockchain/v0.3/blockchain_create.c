@@ -7,10 +7,8 @@
 */
 blockchain_t *blockchain_create(void)
 {
-	/* Allocate memory for the blockchain */
-	blockchain_t *blockchain = malloc(sizeof(blockchain_t));
-	/* Allocate memory for the genesis block */
-	block_t *genesis_block = malloc(sizeof(block_t));
+	blockchain_t *blockchain = calloc(1, sizeof(blockchain_t));
+	block_t *genesis_block = calloc(1, sizeof(block_t));
 	/* If a memory allocation fails, return NULL */
 	if (!blockchain)
 		return (NULL);
@@ -29,7 +27,8 @@ blockchain_t *blockchain_create(void)
 	}
 	if (!genesis_block)
 	{
-		free(blockchain->chain);
+		llist_destroy(blockchain->chain, 1, NULL);
+		llist_destroy(blockchain->unspent, 1, NULL);
 		free(blockchain);
 		return (NULL);
 	}
