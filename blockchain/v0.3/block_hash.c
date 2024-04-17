@@ -30,31 +30,29 @@ uint8_t *block_hash(block_t const *block,
 	* Calculate the total length of data to hash, including block info and
 	* transaction IDs
 	*/
-	size_t len_info_data = sizeof(block->info) + block->data.len;
-	size_t len_info_data_tx;
-	int8_t *block_data_buffer, *cursor;
+	size_t len0 = sizeof(block->info) + block->data.len, len;
+	int8_t *block_data_buffer, *buffer;
 
 	/* Initialize length to the length of block info */
-	len_info_data_tx = len_info_data;
+	len = len0;
 	/* There are transactions in block, add their hash lengths the total length */
 	if (llist_size(block->transactions) > 0)
-		len_info_data_tx += llist_size(block->transactions) * SHA256_DIGEST_LENGTH;
+		len += llist_size(block->transactions) * SHA256_DIGEST_LENGTH;
 
 	/* Allocate memory for the buffer */
-	cursor = block_data_buffer = calloc(1, len_info_data_tx);
-	if (!cursor)
+	buffer = block_data_buffer = calloc(1, len);
+	if (!buffer)
 		return (NULL); /* Return NULL if memory allocation fails */
 
 	/* Copy block info to buffer */
-	memcpy(cursor, &block->info, len_info_data);
-	/* Move Cursor for buffer */
-	cursor += len_info_data;
+	memcpy(buffer, &block->info, len0);
+	buffer += len0;
 
-	/* Iterate through transactions, copying each hash and appending the buffer */
-	llist_for_each(block->transactions, hash_transaction_ids, &cursor);
+	/* Iterate through transactions, hashing each one and appending the buffer */
+	llist_for_each(block->transactions, hash_transaction_ids, &buffer);
 
 	/* Calculate SHA256 hash of the block data buffer and store it in hash_buf */
-	sha256(block_data_buffer, len_info_data_tx, hash_buf);
+	sha256(block_data_buffer, len, hash_buf);
 
 	/* Free allocated memory */
 	free(block_data_buffer);
