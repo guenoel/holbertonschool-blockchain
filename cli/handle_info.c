@@ -35,6 +35,7 @@ int handle_info(state_t *state)
 	uint32_t coins = 0;
 	block_t *last_block = NULL;
 	char *hex_hash, *hex_prev_hash = NULL;
+	int len_tx = 0;
 
 	if (!state || !blockchain)
 	{
@@ -95,7 +96,11 @@ int handle_info(state_t *state)
 			printf("Failed to convert hash to hex\n");
 		}
 
-		printf("Number of Transactions: %d\n", llist_size(last_block->transactions));
+		len_tx = llist_size(last_block->transactions);
+		if (len_tx >= 0)
+			printf("Number of Transactions: %d\n", len_tx);
+		else
+			printf("No list of transactions\n");
 
 		/* Imprimir el encabezado del bloque */
 		printf("\nBlock Header:\n");

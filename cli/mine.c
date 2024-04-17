@@ -51,9 +51,12 @@ int mine(state_t *state, block_t *block, block_t *prev_block,
 		llist_remove_node(state->tx_pool, invalid_tx, state->blockchain->unspent, 1,
 				(node_dtor_t)transaction_destroy);
 
+	/* add all tx from pool to block*/
 	llist_for_each(state->tx_pool, add_transaction, block);
 	block->info.difficulty = blockchain_difficulty(state->blockchain);
+	/* add coinbase tx to block */
 	llist_add_node(block->transactions, coinbase_tx, ADD_NODE_FRONT);
+	/* mine block and check if block is valid */
 	block_mine(block);
 	if ((block_is_valid(block, prev_block, state->blockchain->unspent)) != 0)
 	{
@@ -64,8 +67,12 @@ int mine(state_t *state, block_t *block, block_t *prev_block,
 		block_destroy(block);
 		return (-1);
 	}
+	/* update unspent from transaction list */
 	state->blockchain->unspent = update_unspent(block->transactions,
 					block->hash, state->blockchain->unspent);
+	/* //TODO: c'est pas plutot dans transaction de mettre le coinbase */
+	/* puis ensuite faire un unspent_update pour que ca arrive dans unspent */
+	/* create unspent tx from coinbase tx */
 	utxo = unspent_tx_out_create(block->hash, coinbase_tx->id,
 				llist_get_head(coinbase_tx->outputs));
 	if (!utxo)
@@ -79,7 +86,9 @@ int mine(state_t *state, block_t *block, block_t *prev_block,
 	}
 	while (llist_pop(state->tx_pool))
 		;
+	/* add block to blockchain */
 	llist_add_node(state->blockchain->chain, block, ADD_NODE_REAR);
+	/* add unspent tx to unspent list */
 	llist_add_node(state->blockchain->unspent, utxo, ADD_NODE_REAR);
 	fprintf(stdout, "Block Successfuly mined\n");
 	return (0);

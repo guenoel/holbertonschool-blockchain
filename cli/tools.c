@@ -28,7 +28,8 @@ int sum_unspent(void *node, unsigned int idx, void *arg)
 {
 	unspent_tx_out_t *unspent_tx_out = node;
 	uint32_t *total = arg;
-	(void)idx;
+	/* (void)idx; */
+	printf("index %u: %u\n", idx, unspent_tx_out->out.amount);
 	*total += unspent_tx_out->out.amount;
 	return (0);
 }
