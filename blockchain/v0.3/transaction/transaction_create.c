@@ -24,8 +24,14 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 	/* Check public key of the unspent trans matches the sender's public key*/
 	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN))
 	{
+		printf("unspent_selected for tx: %d\n", unspent->out.amount);
 		/* Create transaction input from selected unspent transaction output */
 		tx_in = tx_in_create(unspent);
+		if (!tx_in)
+		{
+			printf("Failed to create input\n");
+			return (1);
+		}
 		/* Add the transaction input to the list */
 		llist_add_node(inputs, tx_in, ADD_NODE_REAR);
 		/* Update the total amount of selected unspent transactions */
@@ -113,6 +119,41 @@ llist_t *send_amount(EC_KEY const *sender, EC_KEY const *receiver,
 	return (transaction_outputs);
 }
 
+int compare_unspent_tx_out(unspent_tx_out_t *first, unspent_tx_out_t *second, void *arg)
+{
+    (void)arg;
+    if (first->out.amount < second->out.amount)
+    {
+        return -1;
+    } else if (first->out.amount > second->out.amount)
+    {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+llist_t *select_unspent(llist_t *all_unspent, uint32_t amount)
+{
+	int i, size_list;
+	llist_t *selected_unspent;
+	uint32_t selected_amount = 0;
+
+	selected_unspent = llist_create(MT_SUPPORT_FALSE);
+	if (!selected_unspent)
+		return (NULL);
+	llist_sort(all_unspent, compare_unspent_tx_out, NULL, SORT_LIST_ASC);
+	for (i = 0, size_list = llist_size(all_unspent); i < size_list; i++)
+	{
+		unspent_tx_out_t *node = (unspent_tx_out_t *)llist_get_node_at(all_unspent, i);
+		llist_add_node(selected_unspent, node, ADD_NODE_REAR);
+		selected_amount += node->out.amount;
+		if (selected_amount > amount)
+			break;
+	}
+	return (selected_unspent);
+}
+
 
 /**
 * transaction_create - creates a transaction
@@ -130,6 +171,7 @@ transaction_t *transaction_create(EC_KEY const *sender,
 	transaction_t *transaction;
 	llist_t *tr_in, *tr_out;
 	void *args[3];
+	llist_t *selected_unspent;
 	uint32_t unspent_amount = 0;
 
 	if (!sender || !receiver || !all_unspent)
@@ -140,11 +182,22 @@ transaction_t *transaction_create(EC_KEY const *sender,
 		return (NULL);
 	/* Create the transaction inputs */
 	tr_in = llist_create(MT_SUPPORT_FALSE);
+	if (!tr_in)
+		return (NULL);
 	/* Get the public key of the sender */
 	ec_to_pub(sender, pub);
 	/* Select unspent transactions */
+	selected_unspent = select_unspent(all_unspent, amount);
+	if (!selected_unspent)
+	{
+		printf("Failed to select unspent list\n");
+		free(transaction);
+		return (NULL);
+	}
+
+	/* Create inputs from selected unspent */
 	args[0] = pub, args[1] = tr_in, args[2] = &unspent_amount;
-	llist_for_each(all_unspent, select_unspent_in, args);
+	llist_for_each(selected_unspent, select_unspent_in, args);
 	/* Check if the sender has enough unspent amount */
 	if (unspent_amount < amount)
 	{
