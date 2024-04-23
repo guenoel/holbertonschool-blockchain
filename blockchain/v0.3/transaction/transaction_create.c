@@ -1,12 +1,14 @@
 #include "transaction.h"
 
 /**
- * check_unspent - checks if an unspent transaction output is used in a transaction
+ * check_unspent - checks if an unspent transaction output is used in a
+ * transaction
  * @node: current node
  * @idx: index of @node
  * @args: arguments:
  * args[0] = unspent_tx_out_t *unspent (unspent transaction output to check)
- * args[1] = int *used (1 if the unspent transaction output is used, 0 otherwise)
+ * args[1] = int *used (1 if the unspent transaction output is used,
+ * 0 otherwise)
  * Return: 0 on success, 1 on failure
  */
 int check_unspent(llist_node_t node, unsigned int idx, void *args)
@@ -15,43 +17,37 @@ int check_unspent(llist_node_t node, unsigned int idx, void *args)
 	unspent_tx_out_t *unspent = args;
 	unsigned int i;
 
-	/* (void)idx; */ /* Avoid the warning "unused parameter" */
+	(void)idx; /* Avoid the warning "unused parameter" */
 
 	for (i = 0; i < (unsigned int)llist_size(tx->inputs); i++)
 	{
 		tx_in_t *tx_in = llist_get_node_at(tx->inputs, i);
 
-		if (!memcmp(tx_in->block_hash, unspent->block_hash, sizeof(SHA256_DIGEST_LENGTH))
-			&& !memcmp(tx_in->tx_id, unspent->tx_id, sizeof(SHA256_DIGEST_LENGTH))
-			&& !memcmp(tx_in->tx_out_hash, unspent->out.hash, sizeof(SHA256_DIGEST_LENGTH)))
-		{
-			printf("utxo %u with amount %u is used\n", idx, unspent->out.amount);
+		if (!memcmp(tx_in->block_hash, unspent->block_hash,
+					sizeof(SHA256_DIGEST_LENGTH))
+			&& !memcmp(tx_in->tx_id, unspent->tx_id,
+					sizeof(SHA256_DIGEST_LENGTH))
+			&& !memcmp(tx_in->tx_out_hash, unspent->out.hash,
+					sizeof(SHA256_DIGEST_LENGTH)))
 			return (1);
-		}
 	}
-	printf("utxo %u with amount %u is not used\n", idx, unspent->out.amount);
 	return (0);
 }
 
 /**
- * used_in_pool - checks if an unspent transaction output is used in a transaction
+ * used_in_pool - checks if an unspent transaction output is used in a
+ * transaction
  * @unspent: unspent transaction output to check
  * @tx_pool: list of used unspent transactions
- * Return: 1 if the unspent transaction output is used in a transaction, 0 otherwise
+ * Return: 1 if the unspent transaction output is used in a transaction,
+ * 0 otherwise
  */
 int used_in_pool(llist_t *tx_pool, unspent_tx_out_t *unspent)
 {
 	if (!tx_pool)
-	{
-		printf("tx_pool is NULL\n");
 		return (0);
-	}
 	if (llist_for_each(tx_pool, check_unspent, unspent) != 0)
-	{
-		printf("No, utxo found used in tx_pool\n");
 		return (1);
-	}
-	printf("OK, utxo found unsed in tx_pool\n");
 	return (0);
 }
 /**
@@ -76,9 +72,9 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 
 	/* (void)idx */; /* Avoid the warning "unused parameter" */
 	/* Check public key of the unspent trans matches the sender's public key*/
-	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN) && !used_in_pool(tx_pool, unspent))
+	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN)
+			&& !used_in_pool(tx_pool, unspent))
 	{
-		printf("added index %u: amount %u\n", idx, unspent->out.amount);
 		/* Create transaction input from selected unspent transaction output */
 		tx_in = tx_in_create(unspent);
 		/* Add the transaction input to the list */
@@ -86,30 +82,6 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 		/* Update the total amount of selected unspent transactions */
 		*amount += unspent->out.amount;
 	}
-	return (0);
-}
-
-/**
-* sign_transaction_inputs - signs transaction inputs
-* @node: current node
-* @idx: index of @node
-* @args: arguments:
-* args[0] = uint8_t tx_id[SHA256_DIGEST_LENGTH] (ID of the transaction)
-* args[1] = EC_KEY const *sender (sender's private key)
-* args[2] = llist_t *all_unspent (list of all unspent transactions)
-* Return: 0 on success, 1 on failure
-*/
-int sign_transaction_inputs(llist_node_t node, unsigned int idx, void *args)
-{
-	void **ptr = args;
-	tx_in_t *tx_in = node;
-
-	(void)idx; /* Avoid the warning "unused parameter" */
-
-	/* Sign the transaction input using the sender's private key */
-	if (!tx_in_sign(tx_in, ptr[0], ptr[1], ptr[2]))
-		return (1);
-
 	return (0);
 }
 
@@ -186,24 +158,18 @@ transaction_t *transaction_create(EC_KEY const *sender,
 	uint8_t pub[EC_PUB_LEN];
 	transaction_t *transaction;
 	llist_t *tr_in, *tr_out;
-	void *args[3];
+	void *args[4];
 	uint32_t unspent_amount = 0;
 	unsigned int i = 0;
 
 	if (!sender || !receiver || !all_unspent)
 		return (NULL);
-	/* Allocate memory for the transaction */
 	transaction = calloc(1, sizeof(*transaction));
 	if (!transaction)
 		return (NULL);
-	/* Create the transaction inputs */
 	tr_in = llist_create(MT_SUPPORT_FALSE);
-	/* Get the public key of the sender */
 	ec_to_pub(sender, pub);
-	/* Select unspent transactions */
-	args[0] = pub, args[1] = tr_in, args[2] = &unspent_amount;
-	args[3] = tx_pool;
-	/* llist_for_each(all_unspent, select_unspent_in, args); */
+	args[0] = pub, args[1] = tr_in, args[2] = &unspent_amount, args[3] = tx_pool;
 	for (i = 0; i < (unsigned int)llist_size(all_unspent); i++)
 	{
 		unspent_tx_out_t *unspent = llist_get_node_at(all_unspent, i);
@@ -212,26 +178,21 @@ transaction_t *transaction_create(EC_KEY const *sender,
 		if (unspent_amount >= amount)
 			break;
 	}
-	/* Check if the sender has enough unspent amount */
 	if (unspent_amount < amount)
 	{
 		printf("Not enough unspent amount\n");
 		free(transaction);
 		return (NULL);
 	}
-	/* Create the transaction outputs */
 	tr_out = send_amount(sender, receiver, amount, unspent_amount);
 	if (!tr_out)
 	{
 		free(transaction);
 		return (NULL);
 	}
-	/* Initialize the transaction */
 	transaction->inputs = tr_in, transaction->outputs = tr_out;
-	/* Compute the hash of the transaction */
 	transaction_hash(transaction, transaction->id);
 	args[0] = transaction->id, args[1] = (void *)sender, args[2] = all_unspent;
-	/* Sign the transaction inputs */
 	llist_for_each(transaction->inputs, sign_transaction_inputs, args);
 	return (transaction);
 }

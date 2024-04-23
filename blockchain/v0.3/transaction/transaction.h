@@ -95,6 +95,12 @@ sign_t *tx_in_sign(tx_in_t *in, uint8_t const tx_id[SHA256_DIGEST_LENGTH],
 					EC_KEY const *sender, llist_t *all_unspent);
 
 /* Functions Task 5*/
+int sign_transaction_inputs(llist_node_t node, unsigned int idx, void *args);
+int check_unspent(llist_node_t node, unsigned int idx, void *args);
+int used_in_pool(llist_t *tx_pool, unspent_tx_out_t *unspent);
+int select_unspent_in(llist_node_t node, unsigned int idx, void *args);
+llist_t *send_amount(EC_KEY const *sender, EC_KEY const *receiver,
+					int32_t amount, uint32_t total);
 transaction_t *transaction_create(EC_KEY const *sender,
 									EC_KEY const *receiver,
 									uint32_t amount, llist_t *all_unspent,
