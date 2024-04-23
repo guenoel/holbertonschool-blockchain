@@ -1,6 +1,14 @@
 #include "cli.h"
 
 
+
+
+/**
+* bytes_to_hex - converts an array of bytes to a hex string
+* @bytes: array of bytes
+* @len: number of bytes
+* Return: pointer to the resulting hex string
+*/
 char *bytes_to_hex(const uint8_t *bytes, size_t len)
 {
 	size_t i;
@@ -16,10 +24,8 @@ char *bytes_to_hex(const uint8_t *bytes, size_t len)
 		}
 		hex_str[len * 2] = '\0';
 	}
-	return hex_str;
+	return (hex_str);
 }
-
-
 
 /**
 * handle_info - handle the info command

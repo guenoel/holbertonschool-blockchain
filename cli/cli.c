@@ -73,6 +73,36 @@ int find_command(char *cmd, char *arg1, char *arg2, state_t *state,
 	}
 	else if (strcmp(cmd, "info") == 0)
 		return (handle_info(state));
+	else if (strcmp(cmd, "info_block") == 0)
+		return handle_info_block(state);
+	else if (strcmp(cmd, "help") == 0)
+	{
+		print_help();
+		return 0;
+	}
+	else if (strcmp(cmd, "list") == 0)
+	{
+		if (arg1)
+		{
+			printf("Usage: list\n");
+			printf("Too many arguments\n");
+			return (-1);
+		}
+		else
+		{
+			return generate_sorted_unspent_list(state->blockchain);
+		}
+	}
+	else if (strcmp(cmd, "clear") == 0)
+	{
+		system("clear");
+		return 0;
+	}
+	else if (strcmp(cmd, "ls") == 0)
+	{
+		system("ls");
+		return 0;
+	}
 	else if (strcmp(cmd, "load") == 0)
 	{
 		if (!arg1)
@@ -100,6 +130,9 @@ int find_command(char *cmd, char *arg1, char *arg2, state_t *state,
 	}
 }
 
+/**
+* print_logo - prints the Holberton logo
+*/
 void print_logo(void)
 {
 	char *filename = "./logo.txt";
@@ -117,6 +150,7 @@ void print_logo(void)
 	fclose(f);
 }
 
+
 /**
 * main - Entry point
 * Return: 0 if ok, 1 if failed
@@ -130,6 +164,7 @@ int main(void)
 	llist_t *tx_pool = llist_create(MT_SUPPORT_FALSE);
 
 	print_logo();
+
 	if (!blockchain)
 	{
 		fprintf(stderr, "Error: Fallo al crear la cadena de bloques\n");
@@ -174,8 +209,6 @@ int main(void)
 
 		free(line);
 	}
-
 	cleanup(state);
 	return (ret != 0);
 }
-

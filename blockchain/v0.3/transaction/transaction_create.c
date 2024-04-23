@@ -1,6 +1,60 @@
 #include "transaction.h"
 
 /**
+ * check_unspent - checks if an unspent transaction output is used in a transaction
+ * @node: current node
+ * @idx: index of @node
+ * @args: arguments:
+ * args[0] = unspent_tx_out_t *unspent (unspent transaction output to check)
+ * args[1] = int *used (1 if the unspent transaction output is used, 0 otherwise)
+ * Return: 0 on success, 1 on failure
+ */
+int check_unspent(llist_node_t node, unsigned int idx, void *args)
+{
+	transaction_t *tx = node;
+	unspent_tx_out_t *unspent = args;
+	unsigned int i;
+
+	/* (void)idx; */ /* Avoid the warning "unused parameter" */
+
+	for (i = 0; i < (unsigned int)llist_size(tx->inputs); i++)
+	{
+		tx_in_t *tx_in = llist_get_node_at(tx->inputs, i);
+
+		if (!memcmp(tx_in->block_hash, unspent->block_hash, sizeof(SHA256_DIGEST_LENGTH))
+			&& !memcmp(tx_in->tx_id, unspent->tx_id, sizeof(SHA256_DIGEST_LENGTH))
+			&& !memcmp(tx_in->tx_out_hash, unspent->out.hash, sizeof(SHA256_DIGEST_LENGTH)))
+		{
+			printf("utxo %u with amount %u is used\n", idx, unspent->out.amount);
+			return (1);
+		}
+	}
+	printf("utxo %u with amount %u is not used\n", idx, unspent->out.amount);
+	return (0);
+}
+
+/**
+ * used_in_pool - checks if an unspent transaction output is used in a transaction
+ * @unspent: unspent transaction output to check
+ * @tx_pool: list of used unspent transactions
+ * Return: 1 if the unspent transaction output is used in a transaction, 0 otherwise
+ */
+int used_in_pool(llist_t *tx_pool, unspent_tx_out_t *unspent)
+{
+	if (!tx_pool)
+	{
+		printf("tx_pool is NULL\n");
+		return (0);
+	}
+	if (llist_for_each(tx_pool, check_unspent, unspent) != 0)
+	{
+		printf("No, utxo found used in tx_pool\n");
+		return (1);
+	}
+	printf("OK, utxo found unsed in tx_pool\n");
+	return (0);
+}
+/**
 * select_unspent_in - selects unspent transactions that match the sender's
 * public key
 * @node: current node
@@ -18,20 +72,15 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 	tx_in_t *tx_in;/* Transaction input */
 	llist_t *inputs = ptr[1];/* List to store selected transaction inputs */
 	uint32_t *amount = ptr[2];/* Total amount of selected unspent transactions */
+	llist_t *tx_pool = ptr[3];/* List of used unspent transactions */
 
-	(void)idx; /* Avoid the warning "unused parameter" */
-
+	/* (void)idx */; /* Avoid the warning "unused parameter" */
 	/* Check public key of the unspent trans matches the sender's public key*/
-	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN))
+	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN) && !used_in_pool(tx_pool, unspent))
 	{
-		printf("unspent_selected for tx: %d\n", unspent->out.amount);
+		printf("added index %u: amount %u\n", idx, unspent->out.amount);
 		/* Create transaction input from selected unspent transaction output */
 		tx_in = tx_in_create(unspent);
-		if (!tx_in)
-		{
-			printf("Failed to create input\n");
-			return (1);
-		}
 		/* Add the transaction input to the list */
 		llist_add_node(inputs, tx_in, ADD_NODE_REAR);
 		/* Update the total amount of selected unspent transactions */
@@ -119,60 +168,27 @@ llist_t *send_amount(EC_KEY const *sender, EC_KEY const *receiver,
 	return (transaction_outputs);
 }
 
-int compare_unspent_tx_out(unspent_tx_out_t *first, unspent_tx_out_t *second, void *arg)
-{
-    (void)arg;
-    if (first->out.amount < second->out.amount)
-    {
-        return -1;
-    } else if (first->out.amount > second->out.amount)
-    {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-llist_t *select_unspent(llist_t *all_unspent, uint32_t amount)
-{
-	int i, size_list;
-	llist_t *selected_unspent;
-	uint32_t selected_amount = 0;
-
-	selected_unspent = llist_create(MT_SUPPORT_FALSE);
-	if (!selected_unspent)
-		return (NULL);
-	llist_sort(all_unspent, compare_unspent_tx_out, NULL, SORT_LIST_ASC);
-	for (i = 0, size_list = llist_size(all_unspent); i < size_list; i++)
-	{
-		unspent_tx_out_t *node = (unspent_tx_out_t *)llist_get_node_at(all_unspent, i);
-		llist_add_node(selected_unspent, node, ADD_NODE_REAR);
-		selected_amount += node->out.amount;
-		if (selected_amount > amount)
-			break;
-	}
-	return (selected_unspent);
-}
-
 
 /**
 * transaction_create - creates a transaction
 * @sender: key of a sender
 * @receiver: key of a receiver
 * @amount: amount to send to @receiver
-* @all_unspent: all unspent transactions, balance of @sender
+* @all_unspent: all unspent transactions, balance of @send
+* @tx_pool: list of used unspent transactions
 * Return: a new transaction or NULL on failure
 */
 transaction_t *transaction_create(EC_KEY const *sender,
 									EC_KEY const *receiver,
-									uint32_t amount, llist_t *all_unspent)
+									uint32_t amount, llist_t *all_unspent,
+									llist_t *tx_pool)
 {
 	uint8_t pub[EC_PUB_LEN];
 	transaction_t *transaction;
 	llist_t *tr_in, *tr_out;
 	void *args[3];
-	llist_t *selected_unspent;
 	uint32_t unspent_amount = 0;
+	unsigned int i = 0;
 
 	if (!sender || !receiver || !all_unspent)
 		return (NULL);
@@ -182,25 +198,24 @@ transaction_t *transaction_create(EC_KEY const *sender,
 		return (NULL);
 	/* Create the transaction inputs */
 	tr_in = llist_create(MT_SUPPORT_FALSE);
-	if (!tr_in)
-		return (NULL);
 	/* Get the public key of the sender */
 	ec_to_pub(sender, pub);
 	/* Select unspent transactions */
-	selected_unspent = select_unspent(all_unspent, amount);
-	if (!selected_unspent)
-	{
-		printf("Failed to select unspent list\n");
-		free(transaction);
-		return (NULL);
-	}
-
-	/* Create inputs from selected unspent */
 	args[0] = pub, args[1] = tr_in, args[2] = &unspent_amount;
-	llist_for_each(selected_unspent, select_unspent_in, args);
+	args[3] = tx_pool;
+	/* llist_for_each(all_unspent, select_unspent_in, args); */
+	for (i = 0; i < (unsigned int)llist_size(all_unspent); i++)
+	{
+		unspent_tx_out_t *unspent = llist_get_node_at(all_unspent, i);
+
+		select_unspent_in(unspent, i, args);
+		if (unspent_amount >= amount)
+			break;
+	}
 	/* Check if the sender has enough unspent amount */
 	if (unspent_amount < amount)
 	{
+		printf("Not enough unspent amount\n");
 		free(transaction);
 		return (NULL);
 	}

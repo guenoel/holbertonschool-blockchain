@@ -1,5 +1,24 @@
 #include "cli.h"
 
+
+/**
+* llist_get_node_data - Obtains the data stored in a node
+*
+* @node: Pointer to the node
+*
+* Return: Pointer to the data stored in the node
+ */
+void *llist_get_node_data(llist_node_t node)
+{
+	if (node == NULL)
+	{
+		printf("Node is NULL\n");
+		return (NULL);
+	}
+	return ((block_t *)node);
+}
+
+
 /**
 * _get_endianness - Get current endianness
 *

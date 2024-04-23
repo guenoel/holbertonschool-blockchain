@@ -40,7 +40,7 @@ int handle_send(int amount, char *receiver_address, state_t *state)
 
 	str_to_key(receiver_address, &receiver_key);
 	tx = transaction_create(state->wallet, receiver_key, amount,
-							state->blockchain->unspent);
+							state->blockchain->unspent, state->tx_pool);
 	if (tx)
 		printf("Transaction created successfully\n");
 	else

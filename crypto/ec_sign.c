@@ -11,7 +11,7 @@
 * Return: Pointer to the signature buffer on success, NULL on error
 */
 uint8_t *ec_sign(EC_KEY const *key, uint8_t const *msg,
-				size_t msglen, sig_t *sig)
+				size_t msglen, sign_t *sig)
 {
 	uint32_t signature_len = 0;
 

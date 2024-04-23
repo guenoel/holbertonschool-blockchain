@@ -22,13 +22,13 @@
 # define PUB_FILENAME "key_pub.pem"
 
 /**
-* struct sig_s - EC Signature structure
+* struct sign_s - EC Signature structure
 *
 * @sig: Signature buffer. The whole space may not be used
 * @len: Actual signature size. Can't exceed SIG_MAX_LEN,
 * therefore stored on a byte
 */
-typedef struct sig_s
+typedef struct sign_s
 {
 	/*
 	* @sig must stay first, so we can directly use the structure as
@@ -36,7 +36,7 @@ typedef struct sig_s
 	*/
 	uint8_t sig[SIG_MAX_LEN];
 	uint8_t len;
-} sig_t;
+} sign_t;
 
 /*Function Tasks 0*/
 uint8_t *sha256(int8_t const *s, size_t len,
@@ -59,10 +59,10 @@ EC_KEY *ec_load(char const *folder);
 
 /*Function Tasks 6*/
 uint8_t *ec_sign(EC_KEY const *key, uint8_t const *msg, size_t msglen,
-		sig_t *sig);
+		sign_t *sig);
 
 /*Function Tasks 7*/
 int ec_verify(EC_KEY const *key, uint8_t const *msg, size_t msglen,
-		sig_t const *sig);
+		sign_t const *sig);
 
 #endif /* _CRYPTO_H_ */
