@@ -16,7 +16,6 @@ int handle_wallet_save(state_t *state, char *path)
 	if (ec_save(state->wallet, path))
 	{
 		printf("Save wallet (EC key pair)\n");
-		EC_KEY_free(state->wallet);
 		return (0);
 	}
 	else

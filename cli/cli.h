@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+/* #include <sys/wait.h> */
 #include <curses.h>
 
 #include "../crypto/hblk_crypto.h"

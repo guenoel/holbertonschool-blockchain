@@ -7,6 +7,8 @@
 */
 int handle_wallet_create(state_t *state)
 {
+	if (state->wallet)
+		EC_KEY_free(state->wallet);
 	state->wallet = ec_create();
 	if (state->wallet)
 	{

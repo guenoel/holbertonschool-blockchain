@@ -10,13 +10,10 @@
 */
 tx_in_t *tx_in_create(unspent_tx_out_t const *unspent)
 {
-	tx_in_t *input;
+	tx_in_t *input = calloc(1, sizeof(tx_in_t));
 
 	if (!unspent)
 		return (NULL);
-
-	input = calloc(1, sizeof(*input));
-
 	if (!input)
 		return (NULL);
 

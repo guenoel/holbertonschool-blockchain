@@ -43,8 +43,7 @@ int add_transaction(llist_node_t node, unsigned int idx, void *arg)
 int mine(state_t *state, block_t *block, block_t *prev_block,
 		transaction_t *coinbase_tx)
 {
-	int size, i, coins;
-	/* unspent_tx_out_t *utxo = NULL; */
+	int size, i;
 
 	size = llist_size(state->tx_pool);
 	for (i = 0; i < size; i++)
@@ -64,29 +63,11 @@ int mine(state_t *state, block_t *block, block_t *prev_block,
 		block_destroy(block);
 		return (-1);
 	}
-
-	printf("before update\n");
-	llist_for_each(state->blockchain->unspent, sum_unspent, &coins);
-
 	state->blockchain->unspent = update_unspent(block->transactions,
 					block->hash, state->blockchain->unspent);
-	printf("\n after update:\n");
-	llist_for_each(state->blockchain->unspent, sum_unspent, &coins);
-	/* utxo = unspent_tx_out_create(block->hash, coinbase_tx->id,
-				llist_get_head(coinbase_tx->outputs));
-	if (!utxo)
-	{
-		fprintf(stderr, "mine: failed to create unspent tx output\n");
-		while (llist_pop(block->transactions))
-			;
-		transaction_destroy(coinbase_tx);
-		block_destroy(block);
-		return (-1);
-	} */
 	while (llist_pop(state->tx_pool))
 		;
 	llist_add_node(state->blockchain->chain, block, ADD_NODE_REAR);
-	/* llist_add_node(state->blockchain->unspent, utxo, ADD_NODE_REAR); */
 	fprintf(stdout, "Block Successfuly mined\n");
 	return (0);
 }

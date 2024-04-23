@@ -95,6 +95,7 @@ sign_t *tx_in_sign(tx_in_t *in, uint8_t const tx_id[SHA256_DIGEST_LENGTH],
 					EC_KEY const *sender, llist_t *all_unspent);
 
 /* Functions Task 5*/
+void print_utxo_message(void);
 int sign_transaction_inputs(llist_node_t node, unsigned int idx, void *args);
 int check_unspent(llist_node_t node, unsigned int idx, void *args);
 int used_in_pool(llist_t *tx_pool, unspent_tx_out_t *unspent);

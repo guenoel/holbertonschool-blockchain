@@ -8,6 +8,8 @@
 */
 int handle_wallet_load(state_t *state, char *path)
 {
+	if (state->wallet)
+		EC_KEY_free(state->wallet);
 	state->wallet = ec_load(path);
 	if (state->wallet)
 	{

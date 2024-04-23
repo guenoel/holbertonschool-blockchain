@@ -209,6 +209,8 @@ int main(void)
 
 		free(line);
 	}
+	if (line)
+		free(line);
 	cleanup(state);
 	return (ret != 0);
 }

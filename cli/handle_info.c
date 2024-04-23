@@ -1,8 +1,5 @@
 #include "cli.h"
 
-
-
-
 /**
 * bytes_to_hex - converts an array of bytes to a hex string
 * @bytes: array of bytes
@@ -40,8 +37,6 @@ int handle_info(state_t *state)
 	llist_t *tx_pool = state->tx_pool;
 	uint32_t coins = 0;
 	block_t *last_block = NULL;
-	char *hex_hash, *hex_prev_hash = NULL;
-	int len_tx = 0;
 
 	if (!state || !blockchain)
 	{
@@ -76,38 +71,6 @@ int handle_info(state_t *state)
 	last_block = llist_get_tail(blockchain->chain);
 	if (last_block)
 	{
-		printf("\nLast Block Information:\n");
-		printf("Index: %d\n", last_block->info.index);
-		printf("Timestamp: %lu\n", last_block->info.timestamp);
-
-		/* Convertir el hash del bloque anterior a una cadena hexadecimal */
-		hex_prev_hash = bytes_to_hex((uint8_t *)last_block->info.prev_hash, SHA256_DIGEST_LENGTH);
-		if (hex_prev_hash)
-		{
-			printf("Previous Block Hash: %s\n", hex_prev_hash);
-			free(hex_prev_hash);
-		}
-		else {
-			printf("Failed to convert previous block hash to hex\n");
-		}
-
-		hex_hash = bytes_to_hex((uint8_t *)last_block->hash, SHA256_DIGEST_LENGTH);
-		if (hex_hash)
-		{
-			printf("Hash: %s\n", hex_hash);
-			free(hex_hash);
-		}
-		else
-		{
-			printf("Failed to convert hash to hex\n");
-		}
-
-		len_tx = llist_size(last_block->transactions);
-		if (len_tx >= 0)
-			printf("Number of Transactions: %d\n", len_tx);
-		else
-			printf("No list of transactions\n");
-
 		/* Imprimir el encabezado del bloque */
 		printf("\nBlock Header:\n");
 		/*Verificar si el bloque actual es el bloque génesis*/

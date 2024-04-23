@@ -70,7 +70,7 @@ int select_unspent_in(llist_node_t node, unsigned int idx, void *args)
 	uint32_t *amount = ptr[2];/* Total amount of selected unspent transactions */
 	llist_t *tx_pool = ptr[3];/* List of used unspent transactions */
 
-	/* (void)idx */; /* Avoid the warning "unused parameter" */
+	(void)idx; /* Avoid the warning "unused parameter" */
 	/* Check public key of the unspent trans matches the sender's public key*/
 	if (!memcmp(unspent->out.pub, ptr[0], EC_PUB_LEN)
 			&& !used_in_pool(tx_pool, unspent))
@@ -180,7 +180,7 @@ transaction_t *transaction_create(EC_KEY const *sender,
 	}
 	if (unspent_amount < amount)
 	{
-		printf("Not enough unspent amount\n");
+		print_utxo_message();
 		free(transaction);
 		return (NULL);
 	}

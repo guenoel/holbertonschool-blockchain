@@ -23,3 +23,13 @@ int sign_transaction_inputs(llist_node_t node, unsigned int idx, void *args)
 
 	return (0);
 }
+
+/**
+ * print_utxo_message - print message for lack of utxo
+ */
+void print_utxo_message(void)
+{
+	printf("Not enough amount in remaining utxo, if you have change");
+	printf(" in transactions that are not yet mined you will be able to");
+	printf(" send this amount after those transactions have been mined\n");
+}

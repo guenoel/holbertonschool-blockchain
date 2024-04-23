@@ -42,15 +42,16 @@ llist_t *update_unspent(llist_t *transactions,
 			tr_index++)
 	{
 		transaction = llist_get_node_at(transactions, tr_index);
-		/* Loop through all inputs and outputs */
+		/* Loop through all inputs of one transaction */
 		for (io_index = 0, io_count = llist_size(transaction->inputs);
 			io_index < io_count; io_index++)
 		{
 			in = llist_get_node_at(transaction->inputs, io_index);
 			/* Remove the unspent transaction output */
-			llist_remove_node(all_unspent, find_unspent, in->tx_out_hash, 1, NULL);
+			llist_remove_node(all_unspent, find_unspent, in->tx_out_hash, 1,
+								(node_dtor_t)free);
 		}
-		/* Loop through all outputs */
+		/* Loop through all outputs of one transaction */
 		for (io_index = 0, io_count = llist_size(transaction->outputs);
 			io_index < io_count; io_index++)
 		{/* Create a new unspent transaction output */

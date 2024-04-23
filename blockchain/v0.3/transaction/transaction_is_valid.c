@@ -53,7 +53,6 @@ int transaction_is_valid(transaction_t const *transaction,
 	for (i = 0; i < llist_size(transaction->inputs); i++)
 	{ /* Find the input in the list of unspent outputs */
 		in_node = llist_get_node_at(transaction->inputs, i);
-		/* Iterate through all unspent outputs */
 		for (j = 0; j < unspent_len; j++)
 		{/* Get the unspent output */
 			out_node = llist_get_node_at(all_unspent, j);
@@ -71,6 +70,7 @@ int transaction_is_valid(transaction_t const *transaction,
 			EC_KEY_free(unspent_key);
 			return (0);
 		}
+		EC_KEY_free(unspent_key);
 		amount_in += out_node->out.amount;
 	}
 	for (i = 0; i < llist_size(transaction->outputs); i++)
